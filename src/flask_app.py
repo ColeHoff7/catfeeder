@@ -28,3 +28,5 @@ def feed_log():
     bootstrap_css = url_for('static', filename='bootstrap.min.css')
     return render_template('feedlog.html', paw_pic=paw_pic, pork_pic=pork_pic, bootstrap_js=bootstrap_js, bootstrap_css=bootstrap_css, jquery_js=jquery_js)
 
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=80, debug=True)
