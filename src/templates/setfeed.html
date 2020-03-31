@@ -33,14 +33,14 @@
                 <div class="row justify-content-lg-center">
                     <div class="col-lg-auto">
                         <h3 class="display-4">Set Feeding Times</h3>
-                        <form>
+                        <form method="post">
                             <div class="form-group">
                                 <label for="morning">Morning Time</label>
-                                <input type="time" class="form-control" id="morning" value="07:00">
+                                <input type="time" class="form-control" id="morning" name="morning" value="{{m_time}}">
                             </div>
                             <div class="form-group">
                                 <label for="night">Night Time</label>
-                                <input type="time" class="form-control" id="night" value="18:00">
+                                <input type="time" class="form-control" id="night" name="night" value="{{n_time}}">
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
@@ -49,12 +49,28 @@
                 <div class="row justify-content-lg-center" style="margin-top: 10rem">
                     <div class="col-lg-auto text-center">
                         <h3 class="display-4">Or Feed Him Now</h3>
-                        <button type="button" class = "btn btn-secondary">RELEASE FOOD UNTO THE PORK</button>
+                        <button type="button" class = "btn btn-secondary" id="feednow">RELEASE FOOD UNTO THE PORK</button>
+                        <p id="feednowp"></p>
                     </div>
                 </div>
             </div>
         </div>
         <script src="{{jquery_js}}"></script>
         <script src="{{bootstrap_js}}"></script>
+        <script>
+            //TODO: add some sort of check
+        $("#feednow").click(function() {
+            $.get( "feednow", function() {
+                $("#feednowp").text("Feeding...");
+            })
+            .done(function() {
+                $("#feednowp").text("Fed").css("color", "green");
+            })
+            .fail(function() {
+                $("#feednowp").text("Error Feeding!").css("color", "red");
+            });
+            
+        });
+        </script>
     </body>
 </html>
