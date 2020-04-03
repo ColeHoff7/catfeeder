@@ -60,7 +60,7 @@
         <script>
             //TODO: add some sort of check
         $("#feednow").click(function() {
-	    ${"#feednowp").text("Feeding...");
+	        $("#feednowp").text("Feeding...");
             $.get( "feednow", function() {
                 $("#feednowp").text("Feeding...");
             })
