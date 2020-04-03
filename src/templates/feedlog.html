@@ -41,18 +41,18 @@
                         <thead>
                           <tr>
                             <th scope="col">Time</th>
+                            <th scope="col">Type</th>
                             <th scope="col">Success?</th>
                           </tr>
                         </thead>
                         <tbody>
+                          {% for item in log %}
                           <tr>
-                            <th scope="row">March 27th, 7:00 AM</th>
-                            <td class="success">Success</td>
+                            <th scope="row">{{item[0]}}</th>
+                            <td>{{item[1]}}</td>
+                            <td class={{"success" if item[2]=="Success" else "failure"}}>{{item[2]}}</td>
                           </tr>
-                          <tr>
-                            <th scope="row">March 27th, 6:00 PM</th>
-                            <td class="failure">Failure</td>
-                          </tr>
+                          {% endfor %}
                         </tbody>
                       </table>
                 </div>

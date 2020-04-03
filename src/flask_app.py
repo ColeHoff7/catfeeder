@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, request
 import sqlite3
-from feed import Feed
+from feed import Feed, one_time_feed
 
 morning_feed = None
 night_feed = None
@@ -9,12 +9,16 @@ app = Flask(__name__)
 conn = sqlite3.connect('cat.db')
 c = conn.cursor()
 
-#creating feedtimes table if it doesn't exist
+#creating tables if they don't exist
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedtimes'; ''')
 if not c.fetchone()[0]==1:
     c.execute(''' CREATE TABLE feedtimes (morning text, night text); ''')
-    conn.commit()
-    conn.close()
+
+c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedlog'; ''')
+if not c.fetchone()[0]==1:
+    c.execute(''' CREATE TABLE feedlog (time datetime, type text, success text); ''')
+conn.commit()
+conn.close()
 
 
 @app.route('/')
@@ -70,11 +74,17 @@ def feed_log():
     bootstrap_js = url_for('static', filename='bootstrap.bundle.min.js')
     jquery_js = url_for('static', filename='jquery.min.js')
     bootstrap_css = url_for('static', filename='bootstrap.min.css')
-    return render_template('feedlog.html', paw_pic=paw_pic, bootstrap_js=bootstrap_js, bootstrap_css=bootstrap_css, jquery_js=jquery_js)
+    conn = sqlite3.connect('cat.db')
+    c = conn.cursor()
+    c.execute('''SELECT * FROM feedlog ORDER BY time DESC LIMIT 50; ''')
+    log = c.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('feedlog.html', paw_pic=paw_pic, bootstrap_js=bootstrap_js, bootstrap_css=bootstrap_css, jquery_js=jquery_js, log=log)
 
 @app.route('/feednow')
 def feed_now():
-    print("TODO: FEED NOW")
+    one_time_feed("Manual")
     return "True"
 
 if __name__ == "__main__":
