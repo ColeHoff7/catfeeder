@@ -43,7 +43,7 @@ def set_feed():
         # delete previous times from database
         c.execute('''DELETE FROM feedtimes;''')
         # add new times to database
-        c.execute('''INSERT INTO feedtimes VALUES (?,?,?);''', [request.form['morning'], request.form['afternoon'] request.form['night']])
+        c.execute('''INSERT INTO feedtimes VALUES (?,?,?);''', [request.form['morning'], request.form['afternoon'], request.form['night']])
         conn.commit()
         conn.close()
         # delete previous Feed jobs
