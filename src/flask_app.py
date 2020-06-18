@@ -3,6 +3,7 @@ import sqlite3
 from feed import Feed, one_time_feed
 
 morning_feed = None
+afternoon_feed = None
 night_feed = None
 
 app = Flask(__name__)
@@ -18,9 +19,30 @@ if not c.fetchone()[0]==1:
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedlog'; ''')
 if not c.fetchone()[0]==1:
     c.execute(''' CREATE TABLE feedlog (time datetime, type text, success text); ''')
+
+
+
+def setFeedScheduler(morning, afternoon, night):
+    global morning_feed
+    global afternoon_feed
+    global night_feed
+    # delete previous Feed jobs
+    if(morning_feed and night_feed and afternoon_feed):
+        morning_feed.set()
+        afternoon_feed.set()
+        night_feed.set()
+    # create new feed jobs
+    morning_feed = Feed(morning).start_schedule()
+    afternoon_feed = Feed(afternoon).start_schedule()
+    night_feed = Feed(night).start_schedule()
+
+# set off the scheduler for the stored feeding times so it works on boot
+c.execute(''' SELECT morning, afternoon, night FROM feedtimes;''')
+times = c.fetchone()
+setFeedScheduler(times[0], times[1], times[2])
+
 conn.commit()
 conn.close()
-
 
 @app.route('/')
 def home():
@@ -34,9 +56,6 @@ def home():
 @app.route('/setfeed', methods=['GET', 'POST'])
 def set_feed():
     if request.method == 'POST':
-        global morning_feed
-        global afternoon_feed
-        global night_feed
         # TODO: lookup best practices for this
         conn = sqlite3.connect('cat.db')
         c = conn.cursor()
@@ -46,15 +65,7 @@ def set_feed():
         c.execute('''INSERT INTO feedtimes VALUES (?,?,?);''', [request.form['morning'], request.form['afternoon'], request.form['night']])
         conn.commit()
         conn.close()
-        # delete previous Feed jobs
-        if(morning_feed and night_feed and afternoon_feed):
-            morning_feed.set()
-            afternoon_feed.set()
-            night_feed.set()
-        # create new feed jobs
-        morning_feed = Feed(request.form['morning']).start_schedule()
-        afternoon_feed = Feed(request.form['afternoon']).start_schedule()
-        night_feed = Feed(request.form['night']).start_schedule()
+        setFeedScheduler(request.form['morning'], request.form['afternoon'], request.form['night'])
 
     conn = sqlite3.connect('cat.db')
     c = conn.cursor()
