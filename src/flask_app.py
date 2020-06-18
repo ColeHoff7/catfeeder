@@ -12,7 +12,8 @@ c = conn.cursor()
 #creating tables if they don't exist
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedtimes'; ''')
 if not c.fetchone()[0]==1:
-    c.execute(''' CREATE TABLE feedtimes (morning text, night text); ''')
+    c.execute(''' CREATE TABLE feedtimes (morning text, afternoon text, night text); ''')
+    c.execute(''' INSERT INTO feedtimes values ("06:30", "13:00", "19:00"); ''')
 
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedlog'; ''')
 if not c.fetchone()[0]==1:
@@ -34,6 +35,7 @@ def home():
 def set_feed():
     if request.method == 'POST':
         global morning_feed
+        global afternoon_feed
         global night_feed
         # TODO: lookup best practices for this
         conn = sqlite3.connect('cat.db')
@@ -41,15 +43,17 @@ def set_feed():
         # delete previous times from database
         c.execute('''DELETE FROM feedtimes;''')
         # add new times to database
-        c.execute('''INSERT INTO feedtimes VALUES (?,?);''', [request.form['morning'], request.form['night']])
+        c.execute('''INSERT INTO feedtimes VALUES (?,?,?);''', [request.form['morning'], request.form['afternoon'] request.form['night']])
         conn.commit()
         conn.close()
         # delete previous Feed jobs
-        if(morning_feed and night_feed):
+        if(morning_feed and night_feed and afternoon_feed):
             morning_feed.set()
+            afternoon_feed.set()
             night_feed.set()
         # create new feed jobs
         morning_feed = Feed(request.form['morning']).start_schedule()
+        afternoon_feed = Feed(request.form['afternoon']).start_schedule()
         night_feed = Feed(request.form['night']).start_schedule()
 
     conn = sqlite3.connect('cat.db')
@@ -60,12 +64,13 @@ def set_feed():
     conn.commit()
     conn.close()
     m_time = times[0]
-    n_time = times[1]
+    a_time = times[1]
+    n_time = times[2]
     paw_pic = url_for('static', filename='paw_cursor.png')
     bootstrap_js = url_for('static', filename='bootstrap.bundle.min.js')
     jquery_js = url_for('static', filename='jquery.min.js')
     bootstrap_css = url_for('static', filename='bootstrap.min.css')
-    return render_template('setfeed.html', paw_pic=paw_pic, bootstrap_js=bootstrap_js, bootstrap_css=bootstrap_css, jquery_js=jquery_js, m_time=m_time, n_time=n_time)
+    return render_template('setfeed.html', paw_pic=paw_pic, bootstrap_js=bootstrap_js, bootstrap_css=bootstrap_css, jquery_js=jquery_js, m_time=m_time, a_time=a_time, n_time=n_time)
     
 
 @app.route('/feedlog')

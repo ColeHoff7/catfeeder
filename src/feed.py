@@ -9,13 +9,10 @@ def one_time_feed(kind):
     success = "Success"
     try:
         servo = Servo(18)
-        servo.min()
-        sleep(2)
-        servo.max()
-        sleep(2)
-        servo.min()
-        sleep(2)
-        servo.max()
+        servo.value = -1
+        sleep(1)
+        servo.value += 2
+        sleep(1)
     except Exception as e:
         success = "Failure: {}".format(e)
 
