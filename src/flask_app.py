@@ -23,7 +23,6 @@ if not c.fetchone()[0]==1:
 
 
 def setFeedScheduler(morning, afternoon, night):
-    print('setting feed schedulers...')
     global morning_feed
     global afternoon_feed
     global night_feed
