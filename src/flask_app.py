@@ -23,7 +23,7 @@ sameProcessID = find('\d{3} python3', allProcessIDs)
 if sameProcessID:
     log.write("I'm a clone... I'm gonna kill myself")
     log.close()
-    raise Systemexit
+    raise SystemExit
 
 
 morning_feed = None
