@@ -19,6 +19,8 @@ def find(pat, string):
         return None
 
 allProcessIDs = os.popen('pgrep -lf python3').read()
+log.write(allProcessIDs)
+log.flush()
 sameProcessID = find('\d{7} /usr/bin/python3 /home/pi/repos/catfeeder/src/flask_app.py', allProcessIDs)
 if sameProcessID:
     log.write("I'm a clone... I'm gonna kill myself")
@@ -92,7 +94,7 @@ def home():
 def set_feed():
     global log
     if request.method == 'POST':
-        log.write("recieved set feed request {}\n".format(request))
+        log.write("recieved set feed request {}\n".format(request.form))
         log.flush()
         # TODO: lookup best practices for this
         conn = sqlite3.connect('cat.db')
