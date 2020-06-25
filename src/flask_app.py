@@ -20,8 +20,9 @@ def find(pat, string):
 
 allProcessIDs = os.popen('pgrep -lf python3').read()
 sameProcessID = find('\d{3} python3', allProcessIDs)
+log.write(sameProcessID)
 if sameProcessID:
-    log.write("I'm a clone... I'm gonna kill myself")
+    log.write("I'm a clone... I'm gonna kill myself\n")
     log.close()
     raise SystemExit
 
