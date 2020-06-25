@@ -19,9 +19,7 @@ def find(pat, string):
         return None
 
 allProcessIDs = os.popen('pgrep -lf python3').read()
-log.write(allProcessIDs)
-log.flush()
-sameProcessID = find('\d{7} python3', allProcessIDs)
+sameProcessID = find('\d{3} python3', allProcessIDs)
 if sameProcessID:
     log.write("I'm a clone... I'm gonna kill myself")
     log.close()
