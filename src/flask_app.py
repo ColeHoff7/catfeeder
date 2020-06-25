@@ -6,7 +6,7 @@ import os, re
 
 app = Flask(__name__)
 
-log = open("/home/pi/feeder_log_{}.log".format(datetime.datetime.now()), "w+")
+log = open("/home/pi/feeder_logs/feeder_log_{}.log".format(datetime.datetime.now()), "w+")
 log.write("Starting up service!\n")
 log.flush()
 
@@ -21,7 +21,7 @@ def find(pat, string):
 allProcessIDs = os.popen('pgrep -lf python3').read()
 log.write(allProcessIDs)
 log.flush()
-sameProcessID = find('\d{7} /usr/bin/python3 /home/pi/repos/catfeeder/src/flask_app.py', allProcessIDs)
+sameProcessID = find('\d{7} python3', allProcessIDs)
 if sameProcessID:
     log.write("I'm a clone... I'm gonna kill myself")
     log.close()
