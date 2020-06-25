@@ -1,37 +1,47 @@
 from flask import Flask, render_template, url_for, request
 import sqlite3
 from feed import Feed, one_time_feed
+import datetime
 
+app = Flask(__name__)
+
+log = open(f"/home/pi/feeder_log_{datetime.datetime.now()}.log", "w+")
+log.write("Starting up service!")
 morning_feed = None
 afternoon_feed = None
 night_feed = None
 
-app = Flask(__name__)
 conn = sqlite3.connect('cat.db')
 c = conn.cursor()
 
 #creating tables if they don't exist
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedtimes'; ''')
 if not c.fetchone()[0]==1:
+    log.write("feedtimes table not present! Creating new one")
     c.execute(''' CREATE TABLE feedtimes (morning text, afternoon text, night text); ''')
     c.execute(''' INSERT INTO feedtimes values ("06:30", "13:00", "19:00"); ''')
 
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedlog'; ''')
 if not c.fetchone()[0]==1:
+    log.write("feedlog table not present! Creating new one")
     c.execute(''' CREATE TABLE feedlog (time datetime, type text, success text); ''')
 
+conn.commit()
 
 
 def setFeedScheduler(morning, afternoon, night):
     global morning_feed
     global afternoon_feed
     global night_feed
+    global log
     # delete previous Feed jobs
     if(morning_feed and night_feed and afternoon_feed):
+        log.write("deleting previous jobs")
         morning_feed.set()
         afternoon_feed.set()
         night_feed.set()
     # create new feed jobs
+    log.write(f"creating new feed jobs at {morning} {afternoon} {night}")
     morning_feed = Feed(morning).start_schedule()
     afternoon_feed = Feed(afternoon).start_schedule()
     night_feed = Feed(night).start_schedule()
@@ -39,10 +49,11 @@ def setFeedScheduler(morning, afternoon, night):
 # set off the scheduler for the stored feeding times so it works on boot
 c.execute(''' SELECT morning, afternoon, night FROM feedtimes;''')
 times = c.fetchone()
-setFeedScheduler(times[0], times[1], times[2])
-
 conn.commit()
 conn.close()
+log.write("setting initial feed time schedulers")
+setFeedScheduler(times[0], times[1], times[2])
+
 
 @app.route('/')
 def home():
@@ -55,7 +66,9 @@ def home():
 
 @app.route('/setfeed', methods=['GET', 'POST'])
 def set_feed():
+    global log
     if request.method == 'POST':
+        log.write(f"recieved set feed request {request}")
         # TODO: lookup best practices for this
         conn = sqlite3.connect('cat.db')
         c = conn.cursor()
@@ -100,6 +113,8 @@ def feed_log():
 
 @app.route('/feednow')
 def feed_now():
+    global log
+    log.write("recieved feed now request!")
     one_time_feed("Manual")
     return "True"
 
