@@ -2,7 +2,7 @@ from flask import Flask, render_template, url_for, request
 import sqlite3
 from feed import Feed, one_time_feed
 import datetime
-import os, commands, subprocess, re
+import os, re
 
 app = Flask(__name__)
 
