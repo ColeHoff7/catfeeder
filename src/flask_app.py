@@ -2,12 +2,30 @@ from flask import Flask, render_template, url_for, request
 import sqlite3
 from feed import Feed, one_time_feed
 import datetime
+import os, commands, subprocess, re
 
 app = Flask(__name__)
 
 log = open("/home/pi/feeder_log_{}.log".format(datetime.datetime.now()), "w+")
 log.write("Starting up service!\n")
 log.flush()
+
+#trying to prevent multiple instances running because for some reason it does that. idk why. 
+def find(pat, string):
+    match = re.search(pat, string)  # find function for searches below
+    if match:
+        return match.group()
+    else:
+        return None
+
+allProcessIDs = os.popen('pgrep -lf python3').read()
+sameProcessID = find('\d{7} /usr/bin/python3 /home/pi/repos/catfeeder/src/flask_app.py', allProcessIDs)
+if sameProcessID:
+    log.write("I'm a clone... I'm gonna kill myself")
+    log.close()
+    raise Systemexit
+
+
 morning_feed = None
 afternoon_feed = None
 night_feed = None
