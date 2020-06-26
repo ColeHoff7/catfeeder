@@ -8,10 +8,25 @@ app = Flask(__name__)
 
 log = open("/home/pi/feeder_logs/feeder_log_{}.log".format(datetime.datetime.now()), "w+")
 
+#trying to prevent multiple instances running because for some reason it does that. idk why. 
+def find(pat, string):
+    match = re.findall(pat, string)  # find function for searches below
+    if len(match) >1:
+        return True
+    else:
+        return None
+
+allProcessIDs = os.popen('pgrep -lf python3').read()
+sameProcessID = find('\d{3} python3', allProcessIDs)
+log.write(sameProcessID)
+if sameProcessID:
+    log.write("I'm a clone... I'm gonna kill myself\n")
+    log.close()
+    raise SystemExit
+
 morning_feed = None
 afternoon_feed = None
 night_feed = None
-
 
 def setFeedScheduler(morning, afternoon, night):
     global morning_feed
