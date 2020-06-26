@@ -2,26 +2,26 @@ from flask import Flask, render_template, url_for, request
 import sqlite3
 from feed import Feed, one_time_feed
 import datetime
-import os, re
+#import os, re
 #this is absolutely horrible code, don't judge me
 app = Flask(__name__)
 
 log = open("/home/pi/feeder_logs/feeder_log_{}.log".format(datetime.datetime.now()), "w+")
 
 #trying to prevent multiple instances running because for some reason it does that. idk why. 
-def find(pat, string):
-    match = re.findall(pat, string)  # find function for searches below
-    if len(match) >1:
-        return True
-    else:
-        return None
+#def find(pat, string):
+#    match = re.findall(pat, string)  # find function for searches below
+#    if len(match) > 1:
+#        return True
+#    else:
+#        return None
 
-allProcessIDs = os.popen('pgrep -lf python3').read()
-sameProcessID = find('\d{3} python3', allProcessIDs)
-if sameProcessID:
-    log.write("I'm a clone... I'm gonna kill myself\n")
-    log.close()
-    raise SystemExit
+#allProcessIDs = os.popen('pgrep -lf python3').read()
+#sameProcessID = find('\d{3} python3', allProcessIDs)
+#if sameProcessID:
+#    log.write("I'm a clone... I'm gonna kill myself\n")
+#    log.close()
+#    raise SystemExit
 
 morning_feed = None
 afternoon_feed = None
@@ -149,4 +149,4 @@ def feed_now():
 
 if __name__ == "__main__":
     initial_load()
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=80)
