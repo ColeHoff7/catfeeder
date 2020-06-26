@@ -3,52 +3,14 @@ import sqlite3
 from feed import Feed, one_time_feed
 import datetime
 import os, re
-
+#this is absolutely horrible code, don't judge me
 app = Flask(__name__)
 
 log = open("/home/pi/feeder_logs/feeder_log_{}.log".format(datetime.datetime.now()), "w+")
-log.write("Starting up service!\n")
-log.flush()
-
-#trying to prevent multiple instances running because for some reason it does that. idk why. 
-def find(pat, string):
-    match = re.search(pat, string)  # find function for searches below
-    if match:
-        return match.group()
-    else:
-        return None
-
-allProcessIDs = os.popen('pgrep -lf python3').read()
-sameProcessID = find('\d{3} python3', allProcessIDs)
-log.write(sameProcessID)
-if sameProcessID:
-    log.write("I'm a clone... I'm gonna kill myself\n")
-    log.close()
-    raise SystemExit
-
 
 morning_feed = None
 afternoon_feed = None
 night_feed = None
-
-conn = sqlite3.connect('cat.db')
-c = conn.cursor()
-
-#creating tables if they don't exist
-c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedtimes'; ''')
-if not c.fetchone()[0]==1:
-    log.write("feedtimes table not present! Creating new one\n")
-    log.flush()
-    c.execute(''' CREATE TABLE feedtimes (morning text, afternoon text, night text); ''')
-    c.execute(''' INSERT INTO feedtimes values ("06:30", "13:00", "19:00"); ''')
-
-c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedlog'; ''')
-if not c.fetchone()[0]==1:
-    log.write("feedlog table not present! Creating new one\n")
-    log.flush()
-    c.execute(''' CREATE TABLE feedlog (time datetime, type text, success text); ''')
-
-conn.commit()
 
 
 def setFeedScheduler(morning, afternoon, night):
@@ -70,14 +32,40 @@ def setFeedScheduler(morning, afternoon, night):
     afternoon_feed = Feed(afternoon).start_schedule()
     night_feed = Feed(night).start_schedule()
 
-# set off the scheduler for the stored feeding times so it works on boot
-c.execute(''' SELECT morning, afternoon, night FROM feedtimes;''')
-times = c.fetchone()
-conn.commit()
-conn.close()
-log.write("setting initial feed time schedulers\n")
-log.flush()
-setFeedScheduler(times[0], times[1], times[2])
+def initial_load():
+    global morning_feed
+    global afternoon_feed
+    global night_feed
+    global log
+    log.write("Starting up service!\n")
+    log.flush()
+    conn = sqlite3.connect('cat.db')
+    c = conn.cursor()
+
+    #creating tables if they don't exist
+    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedtimes'; ''')
+    if not c.fetchone()[0]==1:
+        log.write("feedtimes table not present! Creating new one\n")
+        log.flush()
+        c.execute(''' CREATE TABLE feedtimes (morning text, afternoon text, night text); ''')
+        c.execute(''' INSERT INTO feedtimes values ("06:30", "13:00", "19:00"); ''')
+
+    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='feedlog'; ''')
+    if not c.fetchone()[0]==1:
+        log.write("feedlog table not present! Creating new one\n")
+        log.flush()
+        c.execute(''' CREATE TABLE feedlog (time datetime, type text, success text); ''')
+
+    conn.commit()
+
+    # set off the scheduler for the stored feeding times so it works on boot
+    c.execute(''' SELECT morning, afternoon, night FROM feedtimes;''')
+    times = c.fetchone()
+    conn.commit()
+    conn.close()
+    log.write("setting initial feed time schedulers\n")
+    log.flush()
+    setFeedScheduler(times[0], times[1], times[2])
 
 
 @app.route('/')
@@ -146,4 +134,5 @@ def feed_now():
     return "True"
 
 if __name__ == "__main__":
+    initial_load()
     app.run(host='0.0.0.0', port=80, debug=True)
