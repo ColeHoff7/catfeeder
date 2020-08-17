@@ -133,7 +133,7 @@ def feed_log():
     bootstrap_css = url_for('static', filename='bootstrap.min.css')
     conn = sqlite3.connect('cat.db')
     c = conn.cursor()
-    c.execute('''SELECT * FROM feedlog ORDER BY time DESC LIMIT 50; ''')
+    c.execute('''SELECT * FROM feedlog ORDER BY date(time) DESC LIMIT 50; ''')
     log = c.fetchall()
     conn.commit()
     conn.close()
@@ -149,4 +149,4 @@ def feed_now():
 
 if __name__ == "__main__":
     initial_load()
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=1234)

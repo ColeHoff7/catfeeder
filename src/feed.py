@@ -17,7 +17,7 @@ def one_time_feed(kind):
         success = "Failure: {}".format(e)
 
     now = datetime.datetime.now()
-    now_string = now.strftime("%d/%m %H:%M")
+    now_string = now.strftime("%m/%d %H:%M")
     conn = sqlite3.connect('cat.db')
     c = conn.cursor()
     c.execute('''INSERT INTO feedlog values (?,?,?);''', [now_string, kind, success])
